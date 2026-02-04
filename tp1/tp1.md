@@ -137,3 +137,46 @@ docker run --rm   -e PORT=4000   -p 4000:4000   -v "$(pwd)":/app   -v /app/node_
 - Exposer le port 9229
 - Debug fonctionnel depuis l’IDE
 
+## Bonus 1 – Dockerfile DEV / PROD multi-stage
+
+### Objectif
+Créer un Dockerfile capable de produire :
+- une image DEV (nodemon, hot reload)
+- une image PROD (légère, sans outils de développement)
+
+### Attendus
+- Utilisation d’un Dockerfile multi-stage
+- Image PROD sans nodemon
+- Installation des dépendances de production uniquement
+- Commandes distinctes pour DEV et PROD
+
+### Indice
+```dockerfile
+FROM node:20-alpine AS dev
+FROM node:20-alpine AS prod
+```
+
+## Bonus 2 – Exécution sans utilisateur root
+
+### Objectif
+Exécuter l’application Node.js sans l’utilisateur root dans le conteneur.
+
+### Attendus
+- Création d’un utilisateur dédié
+- Permissions correctes sur le dossier de travail
+- Application fonctionnelle en mode développement
+
+### Indice
+```dockerfile
+RUN addgroup -S app && adduser -S app -G app
+USER app
+```
+
+## Bonus 3 – Limitation des ressources
+
+### Objectif
+Limiter l’impact du conteneur sur la machine hôte.
+
+### Attendus
+- Limitation CPU et mémoire
+- Application toujours fonctionnelle
