@@ -7,6 +7,12 @@ volumes:
       device: d:/docker/data/mysql_data
       o: bind
 
+networks:
+  backend:
+    name: backend_network
+    external: false
+  frontend:
+    name: frontend_network
 services:
   database:
     container_name: mysql-container
@@ -14,21 +20,26 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=bob
       - MYSQL_DATABASE=wp_db
-      - MYSQL_USER=wp_user
-      - MYSQL_PASSWORD=wp_password
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - mysql_data_volume:/var/lib/mysql
       #- d:/docker/data/mysql_data:/var/lib/mysql
-    
+    networks:
+      - backend
+
   phpmyadmin:
     container_name: phpmyadmin-container
     image: phpmyadmin:latest
     environment:
       - PMA_HOST=database
-      - PMA_USER=wp_user
-      - PMA_PASSWORD=wp_password
+      - PMA_USER=${MYSQL_USER}
+      - PMA_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - "8080:80"
+    networks:
+      - frontend
+      - backend
     depends_on:
       - database
 
@@ -37,11 +48,13 @@ services:
     image: wordpress:latest
     environment:
       - WORDPRESS_DB_HOST=database:3306
-      - WORDPRESS_DB_USER=wp_user
-      - WORDPRESS_DB_PASSWORD=wp_password
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
       - WORDPRESS_DB_NAME=wp_db
     ports:
       - "8000:80"
+    networks:
+      - frontend
+      - backend
     depends_on:
       - database
-      
