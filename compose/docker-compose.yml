@@ -1,4 +1,8 @@
 #version: '3.9'
+secrets:
+  mysql_password:
+    file: ./secrets/mysql_password.txt
+    
 volumes:
   mysql_data_volume:
     driver: local
@@ -18,10 +22,13 @@ services:
     container_name: mysql-container
     image: mysql:latest
     environment:
-      - MYSQL_ROOT_PASSWORD=bob
-      - MYSQL_DATABASE=wp_db
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: bob
+      MYSQL_DATABASE: wp_db
+      MYSQL_USER: ${MYSQL_USER}
+      #- MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+    secrets:
+      - mysql_password
     volumes:
       - mysql_data_volume:/var/lib/mysql
       #- d:/docker/data/mysql_data:/var/lib/mysql
@@ -32,9 +39,11 @@ services:
     container_name: phpmyadmin-container
     image: phpmyadmin:latest
     environment:
-      - PMA_HOST=database
-      - PMA_USER=${MYSQL_USER}
-      - PMA_PASSWORD=${MYSQL_PASSWORD}
+      PMA_HOST: database
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD_FILE: /run/secrets/mysql_password
+    secrets:
+      - mysql_password
     ports:
       - "8080:80"
     networks:
@@ -47,10 +56,12 @@ services:
     container_name: wordpress-container
     image: wordpress:latest
     environment:
-      - WORDPRESS_DB_HOST=database:3306
-      - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
-      - WORDPRESS_DB_NAME=wp_db
+      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/mysql_password
+      WORDPRESS_DB_NAME: wp_db
+    secrets:
+      - mysql_password
     ports:
       - "8000:80"
     networks:
@@ -58,3 +69,4 @@ services:
       - backend
     depends_on:
       - database
+
