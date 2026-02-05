@@ -1,0 +1,47 @@
+#version: '3.9'
+volumes:
+  mysql_data_volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: d:/docker/data/mysql_data
+      o: bind
+
+services:
+  database:
+    container_name: mysql-container
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=bob
+      - MYSQL_DATABASE=wp_db
+      - MYSQL_USER=wp_user
+      - MYSQL_PASSWORD=wp_password
+    volumes:
+      - mysql_data_volume:/var/lib/mysql
+      #- d:/docker/data/mysql_data:/var/lib/mysql
+    
+  phpmyadmin:
+    container_name: phpmyadmin-container
+    image: phpmyadmin:latest
+    environment:
+      - PMA_HOST=database
+      - PMA_USER=wp_user
+      - PMA_PASSWORD=wp_password
+    ports:
+      - "8080:80"
+    depends_on:
+      - database
+
+  wordpress:
+    container_name: wordpress-container
+    image: wordpress:latest
+    environment:
+      - WORDPRESS_DB_HOST=database:3306
+      - WORDPRESS_DB_USER=wp_user
+      - WORDPRESS_DB_PASSWORD=wp_password
+      - WORDPRESS_DB_NAME=wp_db
+    ports:
+      - "8000:80"
+    depends_on:
+      - database
+      
